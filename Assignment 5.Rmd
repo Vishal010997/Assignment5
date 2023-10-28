@@ -1,0 +1,103 @@
+---
+title: "Assignment 5"
+output: html_document
+---
+
+##In following assignment we are performing decompostion using stl and decompose on gold price data as done in previous assugnments.
+  
+  
+```{r}
+library(fpp) #declare library fpp
+library(fpp2)#declare library fpp2
+library(TTR)#declare library TTR
+library(readxl)
+
+gold_price <- read_excel("C:/Rutgers/Subjects/Fall Sem/BF/Assignment/week 4/files/gold_price.xlsx")
+
+View(gold_price)
+
+DataFrame<- data.frame(gold_price$Date,gold_price$Price) #load data
+
+View(DataFrame)
+
+TimeSeries<-ts(DataFrame$gold_price.Price,start=c(2015,01),end=c(2020,07),frequency=12) #time series conversion
+
+plot(TimeSeries) #plot ts
+
+head(TimeSeries)
+```
+
+
+Perform STL (Seasonality, Trend and residual) Decomposition
+```{r}
+stl_decomp <- stl(TimeSeries,s.window ="periodic")
+# Plot the seasonal component
+plot(stl_decomp$time.series[, "seasonal"], main="Seasonal Component")
+
+# Plot the trend component
+plot(stl_decomp$time.series[, "trend"], main="Trend Component")
+
+# Plot the remainder component
+plot(stl_decomp$time.series[, "remainder"], main="Remainder (Residual) Component")
+
+
+plot(stl_decomp)
+
+attributes(stl_decomp)
+```
+
+Performing seasonal adjustment and comparing it to actual time series
+```{r}
+# Lets print out a seasonal adjustment
+seasadj(stl_decomp)
+# Plot a line on the graph
+plot(TimeSeries)
+
+lines(seasadj(stl_decomp), col="Red")
+
+
+```
+
+Forecast seasonal adjustment
+```{r}
+# Default period forecast
+f_stl <- forecast(stl_decomp,h=20)
+# you can pass the # of period
+f_stl1 <- forecast(stl_decomp,h=35)
+f_stl
+plot(f_stl)
+plot(f_stl1)
+```
+
+
+Performing decomposition for each and every component
+```{r}
+# There is more than one way to do things
+decomp_TS <- decompose(TimeSeries)
+
+# Each one shows different attributes 
+attributes(decomp_TS)
+seasadj(decomp_TS)
+plot(decomp_TS)
+decomp_TS$seasonal
+
+f_decomp_seasonal <- forecast(decomp_TS$seasonal)
+plot(f_decomp_seasonal,main="Seasonal Forecast")
+
+f_decomp_trend <- forecast(decomp_TS$trend)
+plot(f_decomp_trend,main="Trend Forecast")
+
+
+seasadj <- TimeSeries-decomp_TS$seasonal
+plot(seasadj,main="Only Trend Component")  
+
+trendadj <- TimeSeries-decomp_TS$trend
+plot(trendadj,main="Only Seasonal Component") 
+```
+
+
+
+
+
+
+
